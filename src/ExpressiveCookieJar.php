@@ -51,19 +51,20 @@ final class ExpressiveCookieJar implements CookieJarInterface
      * Returns instance loaded from request
      *
      * If the expressive session has not been set in `SessionMiddleware::SESSION_ATTRIBUTE` request attribute prior to
-     * calling this and exception will be thrown.
+     * calling this a `NoSessionException` exception will be thrown.
      *
      * @param ServerRequestInterface $request
      * @param string                 $sessionKey
      * @param bool                   $storeSessionCookies
      *
      * @return ExpressiveCookieJar
+     * @throws NoSessionException
      */
     public static function fromRequest(
         ServerRequestInterface $request,
         string $sessionKey,
         bool $storeSessionCookies = false
-    ) {
+    ): ExpressiveCookieJar {
         $session = $request->getAttribute(SessionMiddleware::SESSION_ATTRIBUTE);
         if (! $session instanceof SessionInterface) {
             throw new NoSessionException(sprintf(
@@ -77,9 +78,8 @@ final class ExpressiveCookieJar implements CookieJarInterface
 
     /**
      * Loads cookies from session
-     * @param SessionInterface $session
      */
-    private function load()
+    private function load(): void
     {
         $persisted = $this->session->get($this->sessionKey, '');
 
@@ -93,7 +93,10 @@ final class ExpressiveCookieJar implements CookieJarInterface
         }
     }
 
-    private function persist()
+    /**
+     * Persists cookies in session
+     */
+    private function persist(): void
     {
         $json = [];
         /** @var SetCookie $cookie */
