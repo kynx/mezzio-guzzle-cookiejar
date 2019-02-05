@@ -1,0 +1,13 @@
+<phpunit colors="true">
+    <testsuites>
+        <testsuite name="expressive-guzzle-cookiejar tests">
+            <directory>./test</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src</directory>
+        </whitelist>
+    </filter>
+</phpunit>

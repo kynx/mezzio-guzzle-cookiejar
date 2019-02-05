@@ -1,2 +1,78 @@
 # expressive-guzzle-cookiejar
-Guzzle cookiejar with zend-expressive-session persistence
+
+A [Guzzle cookiejar] implementation with [zend-expressive-session] persistence.
+
+If your Expressive application uses Guzzle and you need to persist the cookies Guzzle receives between requests to 
+your application, this package is for you. It's particularly useful if you are accessing an API endpoint that uses
+sessions to log you in.
+
+## Installation
+
+```
+composer install kynx/expressive-guzzle-cookiejar
+```
+
+## Usage
+
+You will need `Zend\Expressive\Session\SessionMiddleware` [piped into your application] _before_ the handler that is
+using Guzzle so that the session is available in the request.
+
+The following illustrates a simple proxy for an imaginary REST API:
+
+```php
+<?php
+
+namespace My\Handler;
+
+use GuzzleHttp\ClientInterface;
+use Kynx\Guzzle\Expressive\ExpressiveCookieJar;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+class MyProxy implements RequestHandlerInterface
+{
+    private $client;
+    private $username;
+    private $password;
+    
+    public function __construct(ClientInterface $client, string $username, string $password) 
+    {
+        $this->client = $client;
+        $this->username = $username;
+        $this->password = $password;
+    }
+    
+    public function handle(ServerRequestInterface $request) : ResponseInterface
+    {
+        // pass `true` as the third parameter so session cookies are stored
+        $cookieJar = ExpressiveCookieJar::fromRequest($request, 'my-proxy', true);
+        
+        // do we have any cookies?
+        if (! count($cookieJar)) {
+            $this->login($cookieJar);
+        }
+        
+        // proxy the request
+        return $this->client->request('GET', $request->getUri()->getPath(), ['cookies' => $cookieJar]);
+    }
+    
+    private function login(ExpressiveCookieJar $cookieJar)
+    {
+        $this->client->request('GET', '/some/rest/auth', [
+            'auth' => [$this->username, $this->password],
+            'cookies' => $cookieJar
+        ]);
+    }
+}
+```
+
+OK, there will be a bit more to it than that, like handling authentication failures and session timeouts on the remote
+system. But not too much more :)
+
+
+
+
+[Guzzle cookiejar]: http://docs.guzzlephp.org/en/stable/request-options.html#cookies
+[zend-expressive-session]: https://github.com/zendframework/zend-expressive-session
+[piped into your application]: https://docs.zendframework.com/zend-expressive-session/middleware/#adding-the-middleware-to-your-application
