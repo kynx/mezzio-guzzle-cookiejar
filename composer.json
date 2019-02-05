@@ -1,5 +1,5 @@
 {
-  "name": "kynx/guzzle-expressive-cookiejar",
+  "name": "kynx/expressive-guzzle-cookiejar",
   "description": "Guzzle cookiejar with zend-expressive-session persistence",
   "minimum-stability": "stable",
   "license": "MIT",
