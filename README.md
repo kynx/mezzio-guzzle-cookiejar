@@ -1,6 +1,6 @@
 # expressive-guzzle-cookiejar
 
-[![Build Status](https://secure.travis-ci.org/kynx/expressive-guzzle-cookiejar.svg?branch=master)](https://secure.travis-ci.org/kynx/expressive-guzzle-cookiejar)
+[![Build Status](https://travis-ci.org/kynx/expressive-guzzle-cookiejar.svg?branch=master)](https://secure.travis-ci.org/kynx/expressive-guzzle-cookiejar)
 [![Coverage Status](https://coveralls.io/repos/github/kynx/expressive-guzzle-cookiejar/badge.svg?branch=master)](https://coveralls.io/github/kynx/expressive-guzzle-cookiejar?branch=master)
 
 A [Guzzle cookiejar] implementation with [zend-expressive-session] persistence.
