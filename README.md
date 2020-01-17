@@ -1,18 +1,18 @@
-# expressive-guzzle-cookiejar
+# mezzio-guzzle-cookiejar
 
 [![Build Status](https://travis-ci.org/kynx/expressive-guzzle-cookiejar.svg?branch=master)](https://secure.travis-ci.org/kynx/expressive-guzzle-cookiejar)
 [![Coverage Status](https://coveralls.io/repos/github/kynx/expressive-guzzle-cookiejar/badge.svg?branch=master)](https://coveralls.io/github/kynx/expressive-guzzle-cookiejar?branch=master)
 
 A [Guzzle cookiejar] implementation with [mezzio-session] persistence.
 
-If your Expressive application uses Guzzle and you need to persist the cookies Guzzle receives between requests to 
+If your Mezzio application uses Guzzle and you need to persist the cookies Guzzle receives between requests to 
 your application, this package is for you. It's particularly useful if you are accessing an API endpoint that uses
 sessions to log you in.
 
 ## Installation
 
 ```
-composer install kynx/expressive-guzzle-cookiejar
+composer install kynx/mezzio-guzzle-cookiejar
 ```
 
 ## Usage
@@ -49,7 +49,7 @@ class MyProxy implements RequestHandlerInterface
     public function handle(ServerRequestInterface $request) : ResponseInterface
     {
         // pass `true` as the third parameter so session cookies are stored
-        $cookieJar = ExpressiveCookieJar::fromRequest($request, 'my-proxy', true);
+        $cookieJar = MezzioCookieJar::fromRequest($request, 'my-proxy', true);
         
         // do we have any cookies?
         if (! count($cookieJar)) {
@@ -60,7 +60,7 @@ class MyProxy implements RequestHandlerInterface
         return $this->client->request('GET', $request->getUri()->getPath(), ['cookies' => $cookieJar]);
     }
     
-    private function login(ExpressiveCookieJar $cookieJar)
+    private function login(MezzioCookieJar $cookieJar)
     {
         $this->client->request('GET', '/some/rest/auth', [
             'auth' => [$this->username, $this->password],
@@ -78,4 +78,4 @@ system. But not too much more :)
 
 [Guzzle cookiejar]: http://docs.guzzlephp.org/en/stable/request-options.html#cookies
 [mezzio-session]: https://github.com/mezzio/mezzio-session
-[piped into your application]: https://docs.zendframework.com/mezzio-session/middleware/#adding-the-middleware-to-your-application
+[piped into your application]: https://docs.mezzio.dev/mezzio-session/middleware/#adding-the-middleware-to-your-application
