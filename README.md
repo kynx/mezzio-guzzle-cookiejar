@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/kynx/expressive-guzzle-cookiejar.svg?branch=master)](https://secure.travis-ci.org/kynx/expressive-guzzle-cookiejar)
 [![Coverage Status](https://coveralls.io/repos/github/kynx/expressive-guzzle-cookiejar/badge.svg?branch=master)](https://coveralls.io/github/kynx/expressive-guzzle-cookiejar?branch=master)
 
-A [Guzzle cookiejar] implementation with [zend-expressive-session] persistence.
+A [Guzzle cookiejar] implementation with [mezzio-session] persistence.
 
 If your Expressive application uses Guzzle and you need to persist the cookies Guzzle receives between requests to 
 your application, this package is for you. It's particularly useful if you are accessing an API endpoint that uses
@@ -17,7 +17,7 @@ composer install kynx/expressive-guzzle-cookiejar
 
 ## Usage
 
-You will need `Zend\Expressive\Session\SessionMiddleware` [piped into your application] _before_ the handler that is
+You will need `Mezzio\Session\SessionMiddleware` [piped into your application] _before_ the handler that is
 using Guzzle so that the session is available in the request.
 
 The following illustrates a simple proxy for an imaginary REST API:
@@ -28,7 +28,7 @@ The following illustrates a simple proxy for an imaginary REST API:
 namespace My\Handler;
 
 use GuzzleHttp\ClientInterface;
-use Kynx\Guzzle\Expressive\ExpressiveCookieJar;
+use Kynx\Guzzle\Mezzio\ExpressiveCookieJar;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -77,5 +77,5 @@ system. But not too much more :)
 
 
 [Guzzle cookiejar]: http://docs.guzzlephp.org/en/stable/request-options.html#cookies
-[zend-expressive-session]: https://github.com/zendframework/zend-expressive-session
-[piped into your application]: https://docs.zendframework.com/zend-expressive-session/middleware/#adding-the-middleware-to-your-application
+[mezzio-session]: https://github.com/mezzio/mezzio-session
+[piped into your application]: https://docs.zendframework.com/mezzio-session/middleware/#adding-the-middleware-to-your-application

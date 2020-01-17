@@ -1,52 +1,53 @@
 {
-  "name": "kynx/expressive-guzzle-cookiejar",
-  "description": "Guzzle cookiejar with zend-expressive-session persistence",
-  "minimum-stability": "stable",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Matt Kynaston",
-      "email": "matt@kynx.org"
-    }
-  ],
-  "keywords": [
-    "cookiejar",
-    "guzzle",
-    "zend",
-    "expressive"
-  ],
-  "autoload": {
-    "psr-4": {
-      "Kynx\\Guzzle\\Expressive\\":"src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "KynxTest\\Guzzle\\Expressive\\":"test/"
-    }
-  },
-  "require": {
-    "php":">=7.1",
-    "ext-json": "*",
-    "guzzlehttp/guzzle": "^6.3",
-    "zendframework/zend-expressive-session": "^1.2"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^7.5",
-    "zendframework/zend-coding-standard": "^1.0"
-  },
-  "config": {
-    "sort-packages": true
-  },
-  "scripts": {
-    "check": [
-      "@cs-check",
-      "@test"
+    "name": "kynx/mezzio-guzzle-cookiejar",
+    "description": "Guzzle cookiejar with mezzio-session persistence",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matt Kynaston",
+            "email": "matt@kynx.org"
+        }
     ],
-    "cs-check": "phpcs",
-    "cs-fix": "phpcbf",
-    "test": "phpunit --colors=always",
-    "test-coverage": "phpunit --colors=always --coverage-clover clover.xml",
-    "upload-coverage": "coveralls -v"
-  }
+    "keywords": [
+        "cookiejar",
+        "guzzle",
+        "laminas",
+        "mezzio"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Kynx\\Guzzle\\Mezzio\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "KynxTest\\Guzzle\\Mezzio\\": "test/"
+        }
+    },
+    "require": {
+        "php": ">=7.3",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^6.3",
+        "mezzio/mezzio-session": "^1.2",
+        "laminas/laminas-dependency-plugin": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5",
+        "laminas/laminas-coding-standard": "^2.0.0rc1"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "scripts": {
+        "check": [
+            "@cs-check",
+            "@test"
+        ],
+        "cs-check": "phpcs",
+        "cs-fix": "phpcbf",
+        "test": "phpunit --colors=always",
+        "test-coverage": "phpunit --colors=always --coverage-clover clover.xml",
+        "upload-coverage": "coveralls -v"
+    }
 }

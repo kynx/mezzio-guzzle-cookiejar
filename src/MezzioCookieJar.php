@@ -1,49 +1,57 @@
 <?php
+
 /**
- * @copyright: 2019 Matt Kynaston <matt@kynx.org>
  * @license  : MIT
+ *
+ * @copyright: 2019 Matt Kynaston <matt@kynx.org>
  */
+
 declare(strict_types=1);
 
-namespace Kynx\Guzzle\Expressive;
+namespace Kynx\Guzzle\Mezzio;
 
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\CookieJarInterface;
 use GuzzleHttp\Cookie\SetCookie;
-use Kynx\Guzzle\Expressive\Exception\InvalidCookieException;
-use Kynx\Guzzle\Expressive\Exception\NoSessionException;
+use Kynx\Guzzle\Mezzio\Exception\InvalidCookieException;
+use Kynx\Guzzle\Mezzio\Exception\NoSessionException;
+use Mezzio\Session\SessionInterface;
+use Mezzio\Session\SessionMiddleware;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Expressive\Session\SessionInterface;
-use Zend\Expressive\Session\SessionMiddleware;
+use Traversable;
+
+use function count;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function json_encode;
+use function sprintf;
+use function strlen;
 
 /**
- * Guzzle cookie jar implementation using zend-expressive-session for persistence
+ * Guzzle cookie jar implementation using mezzio-session for persistence
  */
-final class ExpressiveCookieJar implements CookieJarInterface
+final class MezzioCookieJar implements CookieJarInterface
 {
-    /**
-     * @var SessionInterface
-     */
+    /** @var SessionInterface */
     private $session;
     private $sessionKey;
     private $storeSessionCookies;
     private $cookieJar;
 
     /**
-     * ExpressiveCookieJar constructor.
-     *
-     * @param SessionInterface $session              Session to persist cookies in
-     * @param string           $sessionKey           Key to store session cookies in
-     * @param bool             $storeSessionCookies  If true, session cookies will be stored
+     * @param SessionInterface $session             Session to persist cookies in
+     * @param string           $sessionKey          Key to store session cookies in
+     * @param bool             $storeSessionCookies If true, session cookies will be stored
      */
     public function __construct(SessionInterface $session, string $sessionKey, bool $storeSessionCookies = false)
     {
-        $this->session = $session;
-        $this->sessionKey = $sessionKey;
+        $this->session             = $session;
+        $this->sessionKey          = $sessionKey;
         $this->storeSessionCookies = $storeSessionCookies;
-        $this->cookieJar = new CookieJar();
+        $this->cookieJar           = new CookieJar();
         $this->load();
     }
 
@@ -53,18 +61,13 @@ final class ExpressiveCookieJar implements CookieJarInterface
      * If the expressive session has not been set in `SessionMiddleware::SESSION_ATTRIBUTE` request attribute prior to
      * calling this a `NoSessionException` exception will be thrown.
      *
-     * @param ServerRequestInterface $request
-     * @param string                 $sessionKey
-     * @param bool                   $storeSessionCookies
-     *
-     * @return ExpressiveCookieJar
      * @throws NoSessionException
      */
     public static function fromRequest(
         ServerRequestInterface $request,
         string $sessionKey,
         bool $storeSessionCookies = false
-    ): ExpressiveCookieJar {
+    ): self {
         $session = $request->getAttribute(SessionMiddleware::SESSION_ATTRIBUTE);
         if (! $session instanceof SessionInterface) {
             throw new NoSessionException(sprintf(
@@ -115,7 +118,7 @@ final class ExpressiveCookieJar implements CookieJarInterface
     /**
      * {@inheritdoc}
      */
-    public function withCookieHeader(RequestInterface $request)
+    public function withCookieHeader(RequestInterface $request): RequestInterface
     {
         return $this->cookieJar->withCookieHeader($request);
     }
@@ -140,6 +143,10 @@ final class ExpressiveCookieJar implements CookieJarInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @param string|null $domain Clears cookies matching a domain
+     * @param string|null $path   Clears cookies matching a domain and path
+     * @param string|null $name   Clears cookies matching a domain, path, and name
      */
     public function clear($domain = null, $path = null, $name = null)
     {
@@ -159,7 +166,7 @@ final class ExpressiveCookieJar implements CookieJarInterface
     /**
      * {@inheritdoc}
      */
-    public function toArray()
+    public function toArray(): array
     {
         return $this->cookieJar->toArray();
     }
@@ -167,7 +174,7 @@ final class ExpressiveCookieJar implements CookieJarInterface
     /**
      * {@inheritdoc}
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return $this->cookieJar->getIterator();
     }
@@ -175,7 +182,7 @@ final class ExpressiveCookieJar implements CookieJarInterface
     /**
      * {@inheritdoc}
      */
-    public function count()
+    public function count(): int
     {
         return $this->cookieJar->count();
     }

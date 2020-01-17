@@ -1,42 +1,49 @@
 <?php
+
 /**
- * @copyright: 2019 Matt Kynaston <matt@kynx.org>
  * @license  : MIT
+ *
+ * @copyright: 2019 Matt Kynaston <matt@kynx.org>
  */
+
 declare(strict_types=1);
 
-namespace KynxTest\Guzzle\Expressive;
+namespace KynxTest\Guzzle\Mezzio;
 
 use GuzzleHttp\Cookie\SetCookie;
 use GuzzleHttp\Psr7\Uri;
 use Iterator;
-use Kynx\Guzzle\Expressive\Exception\InvalidCookieException;
-use Kynx\Guzzle\Expressive\Exception\NoSessionException;
-use Kynx\Guzzle\Expressive\ExpressiveCookieJar;
-use PHPUnit\Framework\TestCase as TestCase;
+use Kynx\Guzzle\Mezzio\Exception\InvalidCookieException;
+use Kynx\Guzzle\Mezzio\Exception\NoSessionException;
+use Kynx\Guzzle\Mezzio\MezzioCookieJar;
+use Mezzio\Session\SessionInterface;
+use Mezzio\Session\SessionMiddleware;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Zend\Expressive\Session\SessionInterface;
-use Zend\Expressive\Session\SessionMiddleware;
+
+use function array_intersect_key;
+use function json_decode;
+use function json_encode;
 
 /**
- * @coversDefaultClass \Kynx\Guzzle\Expressive\ExpressiveCookieJar
+ * @coversDefaultClass \Kynx\Guzzle\Mezzio\MezzioCookieJar
  */
-class ExpressiveCookieJarTest extends TestCase
+class MezzioCookieJarTest extends TestCase
 {
-    private $sessionKey = 'test';
+    private $sessionKey    = 'test';
     private $sessionCookie = [
-        'Name' => 'JSESSiONID',
-        'Value' => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        'Name'   => 'JSESSiONID',
+        'Value'  => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         'Domain' => 'localhost',
-        'Path' => '/'
+        'Path'   => '/',
     ];
-    private $cookie = [
-        'Name' => 'foo',
-        'Value' => 'bar',
-        'Domain' => 'localhost',
-        'Path' => '/',
+    private $cookie        = [
+        'Name'    => 'foo',
+        'Value'   => 'bar',
+        'Domain'  => 'localhost',
+        'Path'    => '/',
         'Expires' => 2177409599, // '2038-12-31T11:59:59'
     ];
 
@@ -46,7 +53,7 @@ class ExpressiveCookieJarTest extends TestCase
     public function testConstructor()
     {
         $session = $this->getSession([$this->cookie]);
-        new ExpressiveCookieJar($session, $this->sessionKey);
+        new MezzioCookieJar($session, $this->sessionKey);
         $actual = json_decode($session->get($this->sessionKey), true);
         $this->assertCount(1, $actual);
         $actual = array_intersect_key($actual[0], $this->cookie);
@@ -59,7 +66,7 @@ class ExpressiveCookieJarTest extends TestCase
     public function testConstructorLoads()
     {
         $session = $this->getSession([$this->cookie]);
-        new ExpressiveCookieJar($session, $this->sessionKey);
+        new MezzioCookieJar($session, $this->sessionKey);
         $actual = json_decode($session->get($this->sessionKey), true);
         $this->assertCount(1, $actual);
         $actual = array_intersect_key($actual[0], $this->cookie);
@@ -72,7 +79,7 @@ class ExpressiveCookieJarTest extends TestCase
     public function testConstructorPersists()
     {
         $session = $this->getSession([$this->cookie]);
-        new ExpressiveCookieJar($session, $this->sessionKey);
+        new MezzioCookieJar($session, $this->sessionKey);
         $actual = json_decode($session->get($this->sessionKey), true);
         $this->assertCount(1, $actual);
         $actual = array_intersect_key($actual[0], $this->cookie);
@@ -85,8 +92,8 @@ class ExpressiveCookieJarTest extends TestCase
     public function testConstructorInvalidCookieThrowsException()
     {
         $this->expectException(InvalidCookieException::class);
-        $session = $this->getSession('foo');
-        new ExpressiveCookieJar($session, $this->sessionKey);
+        $session = $this->getSession(['foo']);
+        new MezzioCookieJar($session, $this->sessionKey);
     }
 
     /**
@@ -95,7 +102,7 @@ class ExpressiveCookieJarTest extends TestCase
     public function testConstructorDoesPersistSessionCookies()
     {
         $session = $this->getSession([$this->sessionCookie]);
-        new ExpressiveCookieJar($session, $this->sessionKey, true);
+        new MezzioCookieJar($session, $this->sessionKey, true);
         $actual = json_decode($session->get($this->sessionKey), true);
         $this->assertCount(1, $actual);
         $actual = array_intersect_key($actual[0], $this->sessionCookie);
@@ -112,7 +119,7 @@ class ExpressiveCookieJarTest extends TestCase
         $request->getAttribute(SessionMiddleware::SESSION_ATTRIBUTE)
             ->willReturn(null)
             ->shouldBeCalled();
-        ExpressiveCookieJar::fromRequest($request->reveal(), $this->sessionKey);
+        MezzioCookieJar::fromRequest($request->reveal(), $this->sessionKey);
     }
 
     /**
@@ -126,8 +133,8 @@ class ExpressiveCookieJarTest extends TestCase
             ->willReturn($session)
             ->shouldBeCalled();
 
-        $actual = ExpressiveCookieJar::fromRequest($request->reveal(), $this->sessionKey);
-        $this->assertInstanceOf(ExpressiveCookieJar::class, $actual);
+        $actual = MezzioCookieJar::fromRequest($request->reveal(), $this->sessionKey);
+        $this->assertInstanceOf(MezzioCookieJar::class, $actual);
     }
 
     /**
@@ -135,7 +142,7 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testWithCookieHeader()
     {
-        $uri = new Uri('http://localhost');
+        $uri     = new Uri('http://localhost');
         $request = $this->prophesize(RequestInterface::class);
         $request->getUri()
             ->willReturn($uri);
@@ -143,10 +150,9 @@ class ExpressiveCookieJarTest extends TestCase
             ->willReturn($request->reveal())
             ->shouldBeCalled();
 
-
-        $session = $this->getSession([$this->cookie]);
-        $cookieJar = new ExpressiveCookieJar($session, $this->sessionKey);
-        $actual = $cookieJar->withCookieHeader($request->reveal());
+        $session   = $this->getSession([$this->cookie]);
+        $cookieJar = new MezzioCookieJar($session, $this->sessionKey);
+        $actual    = $cookieJar->withCookieHeader($request->reveal());
         $this->assertInstanceOf(RequestInterface::class, $actual);
     }
 
@@ -155,7 +161,7 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testExtractCookiesPersists()
     {
-        $uri = new Uri('http://localhost');
+        $uri     = new Uri('http://localhost');
         $request = $this->prophesize(RequestInterface::class);
         $request->getUri()
             ->willReturn($uri);
@@ -163,15 +169,15 @@ class ExpressiveCookieJarTest extends TestCase
         $response->getHeader('Set-Cookie')
             ->willReturn(['another=cookie; Path=/; Max-Age=' . 60 * 60 * 24]);
 
-        $session = $this->getSession();
-        $cookieJar = new ExpressiveCookieJar($session, $this->sessionKey);
+        $session   = $this->getSession();
+        $cookieJar = new MezzioCookieJar($session, $this->sessionKey);
         $cookieJar->extractCookies($request->reveal(), $response->reveal());
 
         $expected = [
-            'Name' => 'another',
-            'Value' => 'cookie',
+            'Name'   => 'another',
+            'Value'  => 'cookie',
             'Domain' => 'localhost',
-            'Path' => '/'
+            'Path'   => '/',
         ];
 
         $actual = json_decode($session->get($this->sessionKey), true);
@@ -187,8 +193,8 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testSetCookiePersists()
     {
-        $session = $this->getSession();
-        $cookieJar = new ExpressiveCookieJar($session, $this->sessionKey);
+        $session   = $this->getSession();
+        $cookieJar = new MezzioCookieJar($session, $this->sessionKey);
         $cookieJar->setCookie(new SetCookie($this->cookie));
 
         $actual = json_decode($session->get($this->sessionKey), true);
@@ -203,8 +209,8 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testSetSessionCookieDoesNotPersist()
     {
-        $session = $this->getSession();
-        $cookieJar = new ExpressiveCookieJar($session, $this->sessionKey);
+        $session   = $this->getSession();
+        $cookieJar = new MezzioCookieJar($session, $this->sessionKey);
         $cookieJar->setCookie(new SetCookie($this->sessionCookie));
 
         $this->assertFalse($session->has($this->sessionKey));
@@ -215,8 +221,8 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testToArrayReturnsCookies()
     {
-        $cookieJar = new ExpressiveCookieJar($this->getSession([$this->cookie]), $this->sessionKey);
-        $actual = $cookieJar->toArray();
+        $cookieJar = new MezzioCookieJar($this->getSession([$this->cookie]), $this->sessionKey);
+        $actual    = $cookieJar->toArray();
         $this->assertCount(1, $actual);
         $actual = array_intersect_key($actual[0], $this->cookie);
         $this->assertEquals($this->cookie, $actual);
@@ -227,8 +233,8 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testCountReturnsCount()
     {
-        $cookieJar = new ExpressiveCookieJar($this->getSession([$this->cookie]), $this->sessionKey);
-        $actual = $cookieJar->count();
+        $cookieJar = new MezzioCookieJar($this->getSession([$this->cookie]), $this->sessionKey);
+        $actual    = $cookieJar->count();
         $this->assertEquals(1, $actual);
     }
 
@@ -237,8 +243,8 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testGetIteratorReturnIterator()
     {
-        $cookieJar = new ExpressiveCookieJar($this->getSession([$this->cookie]), $this->sessionKey);
-        $actual = $cookieJar->getIterator();
+        $cookieJar = new MezzioCookieJar($this->getSession([$this->cookie]), $this->sessionKey);
+        $actual    = $cookieJar->getIterator();
         $this->assertInstanceOf(Iterator::class, $actual);
     }
 
@@ -247,8 +253,8 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testClearSessionCookies()
     {
-        $session = $this->getSession([$this->cookie, $this->sessionCookie]);
-        $cookieJar = new ExpressiveCookieJar($session, $this->sessionKey);
+        $session   = $this->getSession([$this->cookie, $this->sessionCookie]);
+        $cookieJar = new MezzioCookieJar($session, $this->sessionKey);
         $cookieJar->clearSessionCookies();
 
         $actual = json_decode($session->get($this->sessionKey), true);
@@ -265,23 +271,23 @@ class ExpressiveCookieJarTest extends TestCase
      */
     public function testClear()
     {
-        $session = $this->getSession([$this->cookie, $this->sessionCookie]);
-        $cookieJar = new ExpressiveCookieJar($session, $this->sessionKey);
+        $session   = $this->getSession([$this->cookie, $this->sessionCookie]);
+        $cookieJar = new MezzioCookieJar($session, $this->sessionKey);
         $cookieJar->clear();
         $this->assertFalse($session->has($this->sessionKey));
         $this->assertCount(0, $cookieJar->toArray());
     }
 
-    private function getSession($cookies = false)
+    private function getSession(?array $cookies = null): SessionInterface
     {
         $items = $cookies ? [$this->sessionKey => json_encode($cookies)] : [];
-        return new class($this, $items) implements SessionInterface {
+        return new class ($this, $items) implements SessionInterface {
             private $test;
             private $items = [];
 
-            public function __construct(TestCase $test, $items)
+            public function __construct(TestCase $test, array $items)
             {
-                $this->test = $test;
+                $this->test  = $test;
                 $this->items = $items;
             }
 
@@ -290,6 +296,10 @@ class ExpressiveCookieJarTest extends TestCase
                 return $this->items;
             }
 
+            /**
+             * @param mixed|null $default
+             * @return mixed|null
+             */
             public function get(string $name, $default = null)
             {
                 return $this->items[$name] ?? $default;
@@ -300,6 +310,9 @@ class ExpressiveCookieJarTest extends TestCase
                 return isset($this->items[$name]);
             }
 
+            /**
+             * @param mixed $value
+             */
             public function set(string $name, $value): void
             {
                 $this->items[$name] = $value;
@@ -318,16 +331,19 @@ class ExpressiveCookieJarTest extends TestCase
             public function hasChanged(): bool
             {
                 $this->test::fail("hasChanged called");
+                return false;
             }
 
             public function regenerate(): SessionInterface
             {
                 $this->test::fail("regenerate called");
+                return clone $this;
             }
 
             public function isRegenerated(): bool
             {
                 $this->test::fail("isRegenerated called");
+                return false;
             }
         };
     }

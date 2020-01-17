@@ -1,11 +1,14 @@
 <?php
+
 /**
- * @copyright: 2019 Matt Kynaston <matt@kynx.org>
  * @license  : MIT
+ *
+ * @copyright: 2019 Matt Kynaston <matt@kynx.org>
  */
+
 declare(strict_types=1);
 
-namespace Kynx\Guzzle\Expressive\Exception;
+namespace Kynx\Guzzle\Mezzio\Exception;
 
 use RuntimeException;
 
